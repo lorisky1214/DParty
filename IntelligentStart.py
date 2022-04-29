@@ -21,8 +21,8 @@ import numpy as np
 
 from multiprocessing import Process
 import multiprocessing
-from classlib import DScene, main_control, Weather
-from yolov5_onnx import mult_test
+from DParty.classlib import DScene, main_control, Weather
+from DParty.yolov5_onnx import mult_test
 
 # 返回对应两序号节点的向量（数对）
 def backvector(list,n,m):
@@ -482,7 +482,7 @@ def getweather():
     print(weather)
     print("Weather:" + text)
     print("temp:" + temp)
-    pattern = re.compile(r"['雨','雪','晴','云','雾','霾','沙']")
+    pattern = re.compile(r"['雨','雪','晴','阴', '云','雾','霾','沙']")
     result = pattern.findall(text)  # 0：晴天  1：雨天  2：雪天  3：雨雪  4：阴天  5：雾天  6：雾霾  7：沙尘
     text = -1
     if len(result) == 0:
@@ -529,7 +529,7 @@ def weather_deal(wthlist):
             wth.temp = temp
             wthlist[0] = wth
 
-if __name__ == '__main__':
+def Start():
     multiprocessing.freeze_support()
     print("开始程序...")
     mylist = multiprocessing.Manager().list()
