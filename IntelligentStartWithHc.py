@@ -1,5 +1,5 @@
 """
-! Name: IntellgentStart.py
+! Name: IntellgentStartWithHc.py
 ! Author: lolisky
 ! Date: 2022-05-02
 
@@ -8,6 +8,7 @@
      分析视频画面物体
      分析视频画面人物动作
      发回给网关 场景触发信息
+     缓冲队列设置，防止画面抖动
 """
 
 import socket
@@ -21,7 +22,7 @@ import numpy as np
 
 from multiprocessing import Process
 import multiprocessing
-from DParty.classlib import DScene, main_control, Weather
+from DParty.classlib import DScene, main_control, hc_control, Weather
 from DParty.yolov5_onnx import mult_test
 
 # 返回对应两序号节点的向量（数对）
@@ -99,7 +100,7 @@ def listening_deal(antenna, mylist):
             print("Listening Wrong")
 
 # 智能分析进程
-def processing_deal(mylist, wthlist, send_port):
+def processing_deal(mylist,wthlist,hclist, send_port):
     wth = wthlist[0]  # 天气状态
     # 默认地址（后续根据网关指令更改）
     # cap = cv2.VideoCapture("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4")
@@ -120,8 +121,12 @@ def processing_deal(mylist, wthlist, send_port):
     while 1:
         print("begin dealing")
         mc = mylist[0]
+        hc = hclist[0]
         scenecount = len(mc.scenes)
         print(scenecount)
+        if (len(hc.hcs) == 1):
+            print("缓冲区：")
+            print(hc.hcs)
         if old != mc.addres:
             print("修改流地址……(预计耗时1s)")
             print("修改为：" + mc.addres)
@@ -370,72 +375,78 @@ def processing_deal(mylist, wthlist, send_port):
 
                 print("PoseResult:")
                 print(result)
+                if (result != None):
+                    hc.hcs.append(result)
                 print("yoloresult: ")
                 print(yoloresult)
                 # 发送数组
                 # conn.send(repr(result).encode('utf-8'))
-                # 发送json
-                rejson = {"messageType": "ScenarioTrigger",
-                          "messageTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
-                UserID = []
-                DCameraID = []
-                DSceneID = []
-                flag_appear = 0     # 判断有无触发成功，成功则发回执信息
-                for i in range(len(mc.scenes)):
-                    flag_seted_yolo = 1
-                    flag_seted_pose = 1
-                    flag_pose = 0  # 判断姿态有无触发成功，成功则发回执信息
-                    flag_yolo = 0
-                    if len(mc.scenes[i].DItem) >= 0:
-                        if len(mc.scenes[i].DItem) == 0:
+                if (len(hc.hcs) == 2):
+                    # 发送json
+                    rejson = {"messageType": "ScenarioTrigger",
+                              "messageTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+                    UserID = []
+                    DCameraID = []
+                    DSceneID = []
+                    flag_appear = 0     # 判断有无触发成功，成功则发回执信息
+                    for i in range(len(mc.scenes)):
+                        flag_seted_yolo = 1
+                        flag_seted_pose = 1
+                        flag_pose = 0  # 判断姿态有无触发成功，成功则发回执信息
+                        flag_yolo = 0
+                        if len(mc.scenes[i].DItem) >= 0:
+                            if len(mc.scenes[i].DItem) == 0:
+                                flag_seted_yolo = 0
+                            flag_item = 1
+                            for j in range(len(mc.scenes[i].DItem)):
+                                item = mc.scenes[i].DItem[j]
+                                if item >= 100:
+                                    reitem = item - 100
+                                    if (yoloresult[i].count(reitem) != 0):
+                                        flag_item = 0
+                                        break
+                                else:
+                                    if (yoloresult[i].count(item) <= 0):
+                                        flag_item = 0
+                                        break
+                            if flag_item == 1:
+                                flag_yolo = 1
+                        else:
                             flag_seted_yolo = 0
-                        flag_item = 1
-                        for j in range(len(mc.scenes[i].DItem)):
-                            item = mc.scenes[i].DItem[j]
-                            if item >= 100:
-                                reitem = item - 100
-                                if (yoloresult[i].count(reitem) != 0):
-                                    flag_item = 0
-                                    break
-                            else:
-                                if (yoloresult[i].count(item) <= 0):
-                                    flag_item = 0
-                                    break
-                        if flag_item == 1:
                             flag_yolo = 1
-                    else:
-                        flag_seted_yolo = 0
-                        flag_yolo = 1
 
-                    if mc.scenes[i].DHumanMotion >= 0:
-                        if (result[i] == mc.scenes[i].DHumanMotion):
-                            flag_pose = 1  # 成功则置该标志位为 1
-                    else:
-                        flag_seted_pose = 0
-                        flag_pose = 1
-                    print(str(i))
-                    print("flag_seted_pose:" + str(flag_seted_pose))
-                    print("flag_seted_yolo:" + str(flag_seted_yolo))
-                    if flag_yolo and flag_pose:
-                        if flag_seted_yolo or flag_seted_pose:
-                            flag_appear = 1
-                            UserID.append(mc.scenes[i].UserID)
-                            DCameraID.append(mc.scenes[i].DCameraID)
-                            DSceneID.append(mc.scenes[i].DSceneID)
-                            rejson['UserID'] = UserID
-                            rejson['DCameraID'] = DCameraID
-                            rejson['DSceneID'] = DSceneID
+                        if mc.scenes[i].DHumanMotion >= 0:
+                            if (result[i] == mc.scenes[i].DHumanMotion and hc.hcs[0][i] == mc.scenes[i].DHumanMotion):
+                                flag_pose = 1  # 成功则置该标志位为 1
+                        else:
+                            flag_seted_pose = 0
+                            flag_pose = 1
+                        print(str(i))
+                        print("flag_seted_pose:" + str(flag_seted_pose))
+                        print("flag_seted_yolo:" + str(flag_seted_yolo))
+                        if flag_yolo and flag_pose:
+                            if flag_seted_yolo or flag_seted_pose:
+                                flag_appear = 1
+                                UserID.append(mc.scenes[i].UserID)
+                                DCameraID.append(mc.scenes[i].DCameraID)
+                                DSceneID.append(mc.scenes[i].DSceneID)
+                                rejson['UserID'] = UserID
+                                rejson['DCameraID'] = DCameraID
+                                rejson['DSceneID'] = DSceneID
 
-                if (flag_appear == 1):
-                    antenna_send = socket.socket()
-                    # antenna_send.connect(('192.168.31.52', send_port))
-                    try:
-                        antenna_send.connect(('127.0.0.1', send_port))
-                        antenna_send.send(repr(rejson).encode('utf-8'))
-                        antenna_send.close()
-                    except:
-                        print("Connect False...")
-                        antenna_send.close()
+                    if (flag_appear == 1):
+                        antenna_send = socket.socket()
+                        # antenna_send.connect(('192.168.31.52', send_port))
+                        try:
+                            antenna_send.connect(('127.0.0.1', send_port))
+                            antenna_send.send(repr(rejson).encode('utf-8'))
+                            antenna_send.close()
+                        except:
+                            print("Connect False...")
+                            antenna_send.close()
+                    hc.hcs.clear()
+                    hc.hcs.append(result)
+                hclist[0] = hc
             else:
                 print("不进行分析")
             flag_valid_time = 0  # 重置标志位
@@ -446,8 +457,8 @@ def processing_deal(mylist, wthlist, send_port):
             cap = cv2.VideoCapture(old)
         except Exception as e:
             print("Othering.........")
-            print(e)
             time.sleep(1)
+            print(e)
             print('错误类型是', e.__class__.__name__)
             print('错误明细是', e)
             print("Wrong in Processing !")
@@ -543,20 +554,24 @@ def Start(bind_port = 6666, send_port = 6667):
     multiprocessing.freeze_support()
     print("开始程序...")
     mylist = multiprocessing.Manager().list()
+    hclist = multiprocessing.Manager().list()
     wthlist = multiprocessing.Manager().list()
     mc = main_control()
     mylist.append(mc)
+    hc = hc_control()
+    hclist.append(hc)
     wth = Weather()
     firstDWeather, firsttemp = getweather()
     wth.DWeather = firstDWeather
     wth.temp = firsttemp
     wthlist.append(wth)
+
     antenna = socket.socket()  # 实例化套接字通讯对象
 
     antenna.bind(('127.0.0.1', bind_port))  # 存放套接字
     antenna.listen(5)  # 设置连接的个数
     p_recv = Process(target=listening_deal, args=([antenna, mylist]))
-    p_proc = Process(target=processing_deal, args=([mylist, wthlist, send_port]))
+    p_proc = Process(target=processing_deal, args=([mylist, wthlist, hclist, send_port]))
     p_weath = Process(target=weather_deal, args=([wthlist]))
     # p_proc = Process(target=processing_deal, args=([antenna_send, mylist]))
     p_recv.start()
