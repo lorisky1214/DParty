@@ -2,4 +2,4 @@ mediapipe==0.8.9
 numpy==1.20.3
 opencv_python==4.5.5.64
 requests==2.25.1
-DParty==0.8
+DParty==0.9
