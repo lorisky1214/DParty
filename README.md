@@ -23,5 +23,87 @@ if __name__ == '__main__':
     IntelligentStart.Start()	# Start
 ```
 
+## 
+
+
+
+The message json you send should be in the follow format:
+
+```python
+sendData = {
+    "videoStreamaddress":"",		# your video stream address
+    "scenes": [
+        {
+            "UserID": "", 			# e.g. "DUSER2"
+            "DCameraID": "", 		# e.g. "00-1A-2B-3C-4D-56"
+            "DSceneID": "", 		# e.g. "SC001"
+            "DHumanMotion": ,		# e.g. 1
+            "DItem": , 				# e.g. 2
+            "ValidTimeStart": "",  	# e.g. "2022-05-02T09:00:00"
+            "AreaPointsNumber": ,	# e.g. 4
+            "ValidTimeEnd": "",		# e.g. "2022-05-02T24:00:00 "
+            'DWeather': ,			# e.g. 4				    							
+            "AreaPointsPosition":[{"x":, "y": }, {"x":, "y": }, {"x":, "y": },{"x":, "y":}]},
+        # e.g. [{"x": 10, "y": 10}, {"x": 22, "y": 22}, {"x": 77, "y": 77}, {"x": 664, "y": 297}]}
+    ],
+    "messageType":"",				# e.g. "AIProcessScenesConfigM"
+    "messageTime": "", 				# e.g. "2022-005-02T07:55:00.0083193+08:00"
+}
+```
+
+
+
+| DHumanMotion |          Meaning          |
+| :----------: | :-----------------------: |
+|      -1      | No Human Motion Detection |
+|      0       |         Standing          |
+|      1       |          Sitting          |
+|      2       |         Climbing          |
+|      3       |          Area-in          |
+|      4       |         Area-out          |
+
+
+
+| DItem |               Meaning                |
+| :---: | :----------------------------------: |
+|  -1   |          No Item Detection           |
+|   0   |                People                |
+|   1   |               Handbag                |
+|   2   |                Bottle                |
+|   3   |                Phone                 |
+|   4   |                 Cat                  |
+|   5   |                 Dog                  |
+|   6   |               Umbrella               |
+|   7   | Fruit(include banana, apple, orange) |
+
+
+
+| DWeather |        Meaning        |
+| :------: | :-------------------: |
+|    -1    | No Weather Limitation |
+|    0     |         Sunny         |
+|    1     |         Rainy         |
+|    2     |         Snowy         |
+|    3     |    Rainy and Snowy    |
+|    4     |        Cloudy         |
+|    5     |         Foggy         |
+|    6     |        Smoggy         |
+|    7     |       Sand-dust       |
+
+
+
+
+The trigger message json you get will be in the follow format:
+
+```python
+rejson = {
+    "messageType": "ScenarioTrigger",
+    "messageTime": "",				# e.g. 2022-05-02T12:00:00
+    "UserID": "",					# e.g. DUSER2
+    "DCameraID": "",				# e.g. 00-1A-2B-3C-4D-56
+    "DSceneID": "",					# e.g. SC001
+}
+```
+
 
 
