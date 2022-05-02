@@ -23,7 +23,7 @@ from DParty import IntelligentStart
 if __name__ == '__main__':
     bind_port = 6666	# SDK used to bind your scene message
     send_port = 6667	# SDK used to send the triggered to you
-    IntelligentStart.Start()	# Start
+    IntelligentStart.Start(bind_port, send_port)	# Start
 ```
 
 ## Tutorials
