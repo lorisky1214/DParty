@@ -1,10 +1,10 @@
 ![image](https://github.com/lorisky1214/DParty/blob/main/source/logo.png)
 
-## Intro
+## Introduction
 
 A smart home SDK uses the intranet loopback address socket to input the scene. Through the yolov5 and Media Pose network analysis contained in the SDK, it returns whether the scene is effectively triggered.
 
-## Requirements
+## Getting Started
 
 Python 3.8 or later with all [requirements.txt](https://github.com/lorisky1214/DParty/blob/main/requirements.txt) dependencies installed. To install run:
 
@@ -25,6 +25,8 @@ if __name__ == '__main__':
     send_port = 6667	# SDK used to send the triggered to you
     IntelligentStart.Start()	# Start
 ```
+
+## Tutorials
 
 Your program should be listening for a socket, and the SDK will be start after you receive a message json like this:
 
