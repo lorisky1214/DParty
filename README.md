@@ -1,4 +1,4 @@
-![logo1](G:\学习资料\软创\团队LOGO\团队LOGO\logo1.png)
+![image](https://github.com/lorisky1214/DParty/blob/main/source/logo.png)
 
 ## Intro
 
