@@ -14,6 +14,9 @@ $ pip install -r requirements.txt
 
 ## SDK Usage
 
+1. Set up your own program.
+2. Start the Intelligent analysis using the following example.
+
 ```python
 from DParty import IntelligentStart
 
@@ -23,11 +26,16 @@ if __name__ == '__main__':
     IntelligentStart.Start()	# Start
 ```
 
-## 
+Your program should be listening for a socket, and the SDK will be start after you receive a message json like this:
 
+```python
+initjson = {
+    "messageType": "IntelligentStartM",
+    "messageTime": "", 			# e.g. "2022-05-02T09:00:00"
+}
+```
 
-
-The message json you send should be in the follow format:
+Next, your program can send your scenes information in the following format to start analysis:
 
 ```python
 sendData = {
@@ -51,9 +59,9 @@ sendData = {
 }
 ```
 
+There are some references for the properties:
 
-
-| DHumanMotion |          Meaning          |
+| DHumanMotion |         Refers to         |
 | :----------: | :-----------------------: |
 |      -1      | No Human Motion Detection |
 |      0       |         Standing          |
@@ -62,9 +70,7 @@ sendData = {
 |      3       |          Area-in          |
 |      4       |         Area-out          |
 
-
-
-| DItem |               Meaning                |
+| DItem |              Refers to               |
 | :---: | :----------------------------------: |
 |  -1   |          No Item Detection           |
 |   0   |                People                |
@@ -78,7 +84,7 @@ sendData = {
 
 
 
-| DWeather |        Meaning        |
+| DWeather |       Refers to       |
 | :------: | :-------------------: |
 |    -1    | No Weather Limitation |
 |    0     |         Sunny         |
@@ -90,10 +96,7 @@ sendData = {
 |    6     |        Smoggy         |
 |    7     |       Sand-dust       |
 
-
-
-
-The trigger message json you get will be in the follow format:
+If the scene you send is triggered, you will get the triggered message in the following format, you can use it to do your downstream work:
 
 ```python
 rejson = {
