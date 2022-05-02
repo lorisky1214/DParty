@@ -6,7 +6,7 @@ A smart home SDK uses the intranet loopback address socket to input the scene. T
 
 ## Requirements
 
-Python 3.8 or later with all [requirements.txt](https://github.com/lorisky1214/DParty/blob/main/requirements.txt)) dependencies installed. To install run:
+Python 3.8 or later with all [requirements.txt](https://github.com/lorisky1214/DParty/blob/main/requirements.txt) dependencies installed. To install run:
 
 ```bash
 $ pip install -r requirements.txt
