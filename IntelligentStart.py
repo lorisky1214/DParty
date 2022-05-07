@@ -547,7 +547,18 @@ def Start(bind_port = 6666, send_port = 6667):
     mc = main_control()
     mylist.append(mc)
     wth = Weather()
-    firstDWeather, firsttemp = getweather()
+    while (1):
+        try:
+            firstDWeather, firsttemp = getweather()
+            break
+        except Exception as e:
+            print(e)
+            print("获取天气状态失败，请检查并调整网络状态，将在30s后重新获取......")
+            time.sleep(10)
+            print("距离重新获取还剩20s......")
+            time.sleep(10)
+            print("距离重新获取还剩10s......")
+            time.sleep(10)
     wth.DWeather = firstDWeather
     wth.temp = firsttemp
     wthlist.append(wth)
